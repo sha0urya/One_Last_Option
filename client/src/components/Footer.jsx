@@ -18,9 +18,11 @@ export default function FooterCom() {
               className="self-center whitespace-nowrap text-lg sm:text-xl font-semibold dark:text-white"
             >
               <span className="px-2 py-1 bg-gradient-to-r from-purple-500 via-pink-600 to-blue-700 rounded-lg text-white">
-                Last Option
+                {/* Last Option */}
+                Chat
               </span>
-              <span className="px-1 font-bold ">Blog</span>
+              {/* <span className="px-1 font-bold ">Blog</span> */}
+              <span className="px-1 font-bold ">Karo</span>
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-8 mt-4 sm:grid-cols-3 sm:gap-6">
@@ -28,7 +30,7 @@ export default function FooterCom() {
               <Footer.Title title="About" />
               <Footer.LinkGroup col>
                 <Footer.Link
-                  href="https://www.github.com/sha0urya"
+                  href="https://www.github.com/"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -39,7 +41,8 @@ export default function FooterCom() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Last-Option-Blog
+                  {/* Last-Option-Blog */}
+                  Chat Karo
                 </Footer.Link>
               </Footer.LinkGroup>
             </div>
@@ -47,7 +50,7 @@ export default function FooterCom() {
               <Footer.Title title="Follow us" />
               <Footer.LinkGroup col>
                 <Footer.Link
-                  href="https://www.github.com/sha0urya"
+                  href="https://www.github.com/"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -69,17 +72,18 @@ export default function FooterCom() {
         <div className="w-full sm:flex sm:items-center sm:justify-between">
           <Footer.Copyright
             href="#"
-            by="Last-Option-Blog"
+            // by="Last-Option-Blog"
+            by="Chat-karo"
             year={new Date().getFullYear()}
           />
           <div className="flex gap-6 sm:mt-0 mt-4 sm:justify-center">
             <Footer.Icon href="#" icon={BsFacebook} />
             <Footer.Icon
-              href="https://instagram.com/sha0urya"
+              href="https://instagram.com/"
               icon={BsInstagram}
             />
             <Footer.Icon href="#" icon={BsTwitter} />
-            <Footer.Icon href="https://github.com/sha0urya" icon={BsGithub} />
+            <Footer.Icon href="https://github.com/" icon={BsGithub} />
             <Footer.Icon href="#" icon={BsDribbble} />
           </div>
         </div>

@@ -60,9 +60,10 @@ bg-gradient-to-r from-purple-500 via-pink-600 to-blue-700
         
         rounded-lg text-white"
         >
-          Last Option
+          {/* Last Option */}
+          Chat
         </span>
-        <span className="px-1 font-bold ">Blog</span>
+        <span className="px-1 font-bold ">Karo</span>
       </Link>
       <form onSubmit={handleSubmit}>
         <TextInput
