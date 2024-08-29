@@ -25,6 +25,10 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
+app.get("/test", (req, res) => {
+  res.send("Hello");
+});
+
 app.listen(3000, () =>{
     console.log("Server is running on port 3000!");
 });
