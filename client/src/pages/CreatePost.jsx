@@ -8,7 +8,7 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { app } from "../firebase";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { useNavigate } from "react-router-dom";
@@ -17,17 +17,34 @@ export default function CreatePost() {
   const [file, setFile] = useState(null);
   const [imageUploadProgress, setImageUploadProgress] = useState(null);
   const [imageUploadError, setImageUploadError] = useState(null);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({
+    title: "",
+    content: "",
+    category: "",
+    image: "",
+  });
   const [publishError, setPublishError] = useState(null);
-  const [categories, setCategories] = useState([
-    { value: "uncategorized", label: "Select a category" },
-    { value: "javascript", label: "JavaScript" },
-    { value: "reactjs", label: "React.js" },
-    { value: "nextjs", label: "Next.js" },
-  ]);
+  const [categories, setCategories] = useState([]);
   const [customCategory, setCustomCategory] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch("/api/category/getcategories");
+        const data = await res.json();
+
+        // If your API returns the categories directly
+        setCategories(data); // No need to reference data.categories
+      } catch (error) {
+        console.error("Failed to fetch categories", error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
 
   const handleUploadImage = async () => {
     try {
@@ -48,6 +65,7 @@ export default function CreatePost() {
           setImageUploadProgress(progress.toFixed(0));
         },
         (error) => {
+          console.log(error);
           setImageUploadError("Image upload failed");
           setImageUploadProgress(null);
         },
@@ -55,7 +73,7 @@ export default function CreatePost() {
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
             setImageUploadProgress(null);
             setImageUploadError(null);
-            setFormData({ ...formData, image: downloadURL });
+            setFormData((prev) => ({ ...prev, image: downloadURL }));
           });
         }
       );
@@ -68,6 +86,8 @@ export default function CreatePost() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setPublishError(null);
     try {
       const res = await fetch("/api/post/create", {
         method: "POST",
@@ -83,22 +103,46 @@ export default function CreatePost() {
       }
 
       if (res.ok) {
-        setPublishError(null);
         navigate(`/post/${data.slug}`);
       }
     } catch (error) {
       setPublishError("Something went wrong");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleAddCustomCategory = () => {
-    if (customCategory.trim() === "") return;
-    setCategories([
-      ...categories,
-      { value: customCategory.toLowerCase(), label: customCategory },
-    ]);
-    setCustomCategory("");
-  };
+const handleAddCustomCategory = async () => {
+  if (customCategory.trim() === "") return;
+
+  try {
+    const res = await fetch("/api/category/addcategory", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        label: customCategory,
+        value: customCategory.toLowerCase(),
+      }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      const newCategory = {
+        label: customCategory,
+        value: customCategory.toLowerCase(),
+      };
+      setCategories([...categories, newCategory]); // Add new category to dropdown options
+      setCustomCategory(""); // Clear input field
+      setFormData((prev) => ({ ...prev, category: newCategory.value })); // Automatically select the new category
+    } else {
+      console.error("Error adding category", data.message);
+    }
+  } catch (error) {
+    console.error("Failed to add category", error);
+  }
+};
 
   return (
     <div className="p-3 max-w-3xl mx-auto min-h-screen">
@@ -119,12 +163,18 @@ export default function CreatePost() {
             onChange={(e) =>
               setFormData({ ...formData, category: e.target.value })
             }
+            required
           >
-            {categories.map((category) => (
-              <option key={category.value} value={category.value}>
-                {category.label}
-              </option>
-            ))}
+            <option value="">Select Category</option>
+            {categories && categories.length > 0 ? (
+              categories.map((category) => (
+                <option key={category._id} value={category.value}>
+                  {category.label}
+                </option>
+              ))
+            ) : (
+              <option>Loading categories...</option>
+            )}
           </Select>
         </div>
         <div className="flex gap-4 items-center">
@@ -156,7 +206,7 @@ export default function CreatePost() {
             size="sm"
             outline
             onClick={handleUploadImage}
-            disabled={imageUploadProgress}
+            disabled={!!imageUploadProgress}
           >
             {imageUploadProgress ? (
               <div className="w-16 h-16">
@@ -174,7 +224,7 @@ export default function CreatePost() {
         {formData.image && (
           <img
             src={formData.image}
-            alt="upload"
+            alt="uploaded"
             className="w-full h-72 object-cover"
           />
         )}
@@ -187,8 +237,12 @@ export default function CreatePost() {
             setFormData({ ...formData, content: value });
           }}
         />
-        <Button type="submit" gradientDuoTone="purpleToPink">
-          Publish
+        <Button
+          type="submit"
+          gradientDuoTone="purpleToPink"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Publishing..." : "Publish"}
         </Button>
         {publishError && (
           <Alert className="mt-5" color="failure">
